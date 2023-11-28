@@ -10,23 +10,6 @@ function AutocompleteTextbox() {
   const timeoutIdRef = useRef(null);
   const [wordCount, setWordCount] = useState(0);
 
-  //const [inputValue, setInputValue2] = useState('');
-  const [suggestionIndex2, setSuggestionIndex2] = useState(0);
-  const suggestionsRef2 = useRef([]); // Use useRef for suggestions
-  //const [displaySuggestions, setDisplaySuggestions] = useState(false); // Track whether to display suggestions
-  const inputRef2 = useRef(null);
-  const timeoutIdRef2 = useRef(null);
-  //const [wordCount2, setWordCount2] = useState(0);
-
-  //const [inputValue, setInputValue2] = useState('');
-  const [suggestionIndex3, setSuggestionIndex3] = useState(0);
-  const suggestionsRef3 = useRef([]); // Use useRef for suggestions
-  //const [displaySuggestions, setDisplaySuggestions] = useState(false); // Track whether to display suggestions
-  const inputRef3 = useRef(null);
-  const timeoutIdRef3 = useRef(null);
-  //const [wordCount2, setWordCount2] = useState(0);
-
-
   //const openai = new openAI();
 
   const countWords = (input) => {
@@ -93,13 +76,6 @@ function AutocompleteTextbox() {
   const fetchSuggestions = async (input) => {
     const newSuggestions = await queryGPT(input);
     suggestionsRef.current = newSuggestions; // Update the suggestions with the new values
-
-    const newSuggestions2 = await queryGPT(input);
-    suggestionsRef2.current = newSuggestions2; // Update the suggestions with the new values
-
-    const newSuggestions3 = await queryGPT(input);
-    suggestionsRef3.current = newSuggestions3; // Update the suggestions with the new values
-    
     setDisplaySuggestions(true); // Display suggestions after fetching
   };
 
@@ -107,8 +83,6 @@ function AutocompleteTextbox() {
     const newValue = event.target.value;
     setInputValue(newValue);
     suggestionsRef.current = []; // Clear suggestions on every keystroke
-    suggestionsRef2.current = [];
-    suggestionsRef3.current = [];
     setDisplaySuggestions(false); // Hide suggestions on input change
     countWords(newValue);
     
@@ -116,13 +90,12 @@ function AutocompleteTextbox() {
     if (newValue.endsWith(" ")) {
       timeoutIdRef.current = setTimeout(() => {
         fetchSuggestions(newValue);
-        //fetchSuggestions2(newValue);
-      }, 2000); // 3000 milliseconds = 3 seconds
+      }, 3000); // 3000 milliseconds = 3 seconds
     }
   };
 
   const handleKeyDown = (event) => {
-    if (event.key === '1') {
+    if (event.key === 'Tab') {
       event.preventDefault(); // Prevent the default Tab behavior
   
       if (displaySuggestions && suggestionsRef.current.length > 0) {
@@ -147,63 +120,31 @@ function AutocompleteTextbox() {
         }
       }
     }
-
-    if (event.key === '2') {
-      event.preventDefault(); // Prevent the default Tab behavior
-  
-      if (displaySuggestions && suggestionsRef2.current.length > 0) {
-        const suggestionSentence2 = suggestionsRef2.current[0];
-        const words = suggestionSentence2.split(' ');
-  
-        if (words.length > 0) {
-          const selectedWord = words[0];
-          const updatedValue = inputValue.trimEnd() + ' ' + selectedWord + ' ';
-          setInputValue(updatedValue);
-  
-          // Remove only the first word from the suggestions
-          const remainingWords = words.slice(1);
-          const remainingSentence = remainingWords.join(' ');
-          const remainingSuggestions = [...suggestionsRef2.current];
-          remainingSuggestions[0] = remainingSentence;
-          suggestionsRef2.current = remainingSuggestions;
-  
-          if (remainingWords.length === 0) {
-            setDisplaySuggestions(false); // Hide suggestions when no words are left
-          }
-        }
-      }
-    }
-
-    if (event.key === '3') {
-      event.preventDefault(); // Prevent the default Tab behavior
-  
-      if (displaySuggestions && suggestionsRef3.current.length > 0) {
-        const suggestionSentence3 = suggestionsRef3.current[0];
-        const words = suggestionSentence3.split(' ');
-  
-        if (words.length > 0) {
-          const selectedWord = words[0];
-          const updatedValue = inputValue.trimEnd() + ' ' + selectedWord + ' ';
-          setInputValue(updatedValue);
-  
-          // Remove only the first word from the suggestions
-          const remainingWords = words.slice(1);
-          const remainingSentence = remainingWords.join(' ');
-          const remainingSuggestions = [...suggestionsRef3.current];
-          remainingSuggestions[0] = remainingSentence;
-          suggestionsRef3.current = remainingSuggestions;
-  
-          if (remainingWords.length === 0) {
-            setDisplaySuggestions(false); // Hide suggestions when no words are left
-          }
-        }
-      }
-    }
-
-    
   };
   
   
+  
+  const handleKeyDown2 = (event) => {
+    if (event.key === 'Tab') {
+      event.preventDefault(); // Prevent the default Tab behavior
+
+      if (displaySuggestions && suggestionsRef.current.length > 0) {
+        const selectedWord = suggestionsRef.current[0].split(' ')[0];
+        const updatedValue = inputValue.trimEnd() + ' ' + selectedWord + ' ';
+        setInputValue(updatedValue);
+
+        const remainingSuggestions = suggestionsRef.current.slice(1);
+        suggestionsRef.current = remainingSuggestions;
+
+        if (remainingSuggestions.length === 0) {
+          setDisplaySuggestions(false); // Hide suggestions when no suggestions are left
+        }
+      } else {
+        // If there are no suggestions left, continue with default Tab behavior
+        inputRef.current.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true }));
+      }
+    }
+  };
 
   useEffect(() => {
     return () => clearTimeout(timeoutIdRef.current);
@@ -226,27 +167,10 @@ function AutocompleteTextbox() {
           onKeyDown={handleKeyDown} /* Attach the handleKeyDown function */
         />
         <div className="word-count">Word Count: {wordCount}</div>
-        
         {displaySuggestions && suggestionsRef.current.length > 0 && (
           <div className="autocomplete-suggestion">
             {suggestionsRef.current.map((suggestion, index) => (
               <div key={index}>{suggestion}</div>
-            ))}
-          </div>
-        )}
-
-        {displaySuggestions && suggestionsRef2.current.length > 0 && (
-          <div className="autocomplete-suggestion2">
-            {suggestionsRef2.current.map((suggestion2, index2) => (
-              <div key={index2}>{suggestion2}</div>
-            ))}
-          </div>
-        )}
-
-        {displaySuggestions && suggestionsRef3.current.length > 0 && (
-          <div className="autocomplete-suggestion3">
-            {suggestionsRef3.current.map((suggestion3, index3) => (
-              <div key={index3}>{suggestion3}</div>
             ))}
           </div>
         )}
